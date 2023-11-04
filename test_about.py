@@ -11,7 +11,7 @@ def test_init_saved_data():
 
 def test_load_json():
     # Replace with the directory containing your JSON files
-    json_dir = "./streamlit_app/model_A_object"
+    json_dir = "model_A_object"
 
     # List of JSON file names to test
     json_files = ["ccsr_ordinal_mapping.json", "county_ordinal_mapping.json", "facility_ordinal_mapping.json"]
@@ -27,7 +27,7 @@ def test_load_json():
 
 def test_load_obj():
     # Replace with the directory containing your object files
-    obj_dir = "./streamlit_app/model"
+    obj_dir = "model"
 
     # List of object file names to test
     obj_files = ["model_A.pkl", "pipeline_obj_updated.pkl"]
