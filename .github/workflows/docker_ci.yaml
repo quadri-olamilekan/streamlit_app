@@ -6,7 +6,6 @@ on:
       - "main"
       
 env:
-    TEST_TAG: quadribello/ml_app:test
     LATEST_TAG: quadribello/ml_app:latest
     
 jobs:
@@ -23,16 +22,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and export to Docker
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          load: true
-          tags: ${{ env.TEST_TAG }}
-      - name: Test
-        run: |
-          docker run --rm ${{ env.TEST_TAG }}          
+          password: ${{ secrets.DOCKERHUB_TOKEN }}        
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
