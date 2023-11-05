@@ -18,7 +18,7 @@ jobs:
             ref: ${{ github.ref }}
             check-name: 'Run Tests'
             repo-token: ${{ secrets.GITHUB_TOKEN }}
-            wait-interval: 10  
+            wait-interval: 70
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up QEMU
