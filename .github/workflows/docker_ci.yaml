@@ -9,8 +9,10 @@ jobs:
     name: Build and Push the Docker Image
     runs-on: ubuntu-latest
     steps:
+      - name: Set ACTIONS_STEP_DEBUG
+        run: echo "ACTIONS_STEP_DEBUG=true" >> $GITHUB_ENV  # Enable debug output
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Wait for tests to succeed
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
