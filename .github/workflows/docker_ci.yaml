@@ -7,11 +7,6 @@ on:
     types:
       - completed
 
-env:
-  # Set the initial version
-  INITIAL_VERSION: 1
-  LATEST_TAG: quadribello/ml_app:${{ github.run_number }}-${{ env.INITIAL_VERSION }}
-
 jobs:
   docker:
     if: ${{ github.event.workflow_run.conclusion == 'success'}}
@@ -28,13 +23,16 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Determine the new version
-        id: version
-        run: echo ::set-output name=VERSION::${{ env.INITIAL_VERSION + 1 }}
+      - name: Get the current version
+        run: echo ::set-output name=VERSION::${{ steps.increment.outputs.VERSION }}
+        id: get-version
+      - name: Increment version
+        id: increment
+        run: echo ::set-output name=VERSION::$((${{ steps.get-version.outputs.VERSION }} + 1))
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: quadribello/ml_app:${{ github.run_number }}-${{ steps.version.outputs.VERSION }}
+          tags: quadribello/ml_app:latest, quadribello/ml_app:${{ steps.increment.outputs.VERSION }}
