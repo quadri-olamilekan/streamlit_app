@@ -15,10 +15,9 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
             ref: "main"
-            check-name: 'Run Tests'
+            check-name: 'build'
             repo-token: ${{ secrets.GITHUB_TOKEN }}
-        env:
-            CI: ""
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
