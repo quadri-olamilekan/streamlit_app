@@ -1,23 +1,19 @@
 name: ci
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_run:
+    workflows: ["Run Tests"]
+    branches: [main]
+    types:
+      - completed
 
 jobs:
   docker:
-    name: Build and Push the Docker Image
+    if: ${{ github.event.workflow_run.conclusion == 'success'}}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Wait for tests to succeed
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-            ref: ${{ github.ref }}
-            check-name: 'tests'
-            repo-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -28,15 +24,15 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Get the current version
+        run: echo ::set-output name=VERSION::${{ steps.increment.outputs.VERSION }}
         id: get-version
-        run: echo "VERSION=$(($(cat .version) + 1))" >> $GITHUB_ENV
       - name: Increment version
         id: increment
-        run: echo $VERSION > .version
+        run: echo ::set-output name=VERSION::$((${{ steps.get-version.outputs.VERSION }} + 1))
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: quadribello/ml_app:latest, quadribello/ml_app:${{ env.VERSION }}
+          tags: quadribello/ml_app:latest, quadribello/ml_app:${{ steps.increment.outputs.VERSION }}
