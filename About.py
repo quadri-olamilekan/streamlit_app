@@ -15,9 +15,33 @@ import pickle
 import json
 import os
 import streamlit_option_menu as option_menu
+import pymongo
+from urllib.parse import quote_plus
+import sys
 
-# Create an empty list to store saved data
-# Use st.cache to store data persistently
+def get_secrets():
+    with open('secrets.json') as secrets_file:
+        secrets = json.load(secrets_file)
+
+    return secrets
+
+secrets = get_secrets()
+
+# Escape username and password
+escaped_username = quote_plus(secrets.get("USERNAME"))
+escaped_password = quote_plus(secrets.get("PASSWORD"))
+cluster_url = secrets.get("CLUSTER_URL")
+
+# Replace these values with your MongoDB connection details
+mongo_uri = f"mongodb+srv://{escaped_username}:{escaped_password}@{cluster_url}/?retryWrites=true&w=majority"
+
+
+@st.cache_resource
+def init_connection():
+    return pymongo.MongoClient(mongo_uri)
+
+client = init_connection()
+
 @st.cache(allow_output_mutation=True)
 def init_saved_data():
     return []
@@ -25,6 +49,7 @@ def init_saved_data():
 saved_data = init_saved_data()
 
 def main():
+
     # Using custom css
     helper.local_css(settings.CSS)
 
@@ -82,6 +107,7 @@ def main():
         )
 
         user_data = helper.user_inputs()
+        columns = user_data["columns"]
         # st.write(user_data)
 
         if user_data['data'][6] == 'No':
@@ -102,6 +128,18 @@ def main():
                     st.text('Estimated total charges: $' + str(prediction[0]))
                     # Append the input and result to the saved_data list
                     saved_data.append(user_data["data"] + [prediction[0]])
+                    
+                    # Save data to MongoDB
+                    db = client[secrets.get("DATABASE_NAME")]
+                    my_collection = db[secrets.get("COLLECTION_NAME")]
+                    prediction_value = float(prediction[0])
+                    data_dict = {column: value for column, value in zip(columns, user_data["data"])}
+                    data_dict["estimation"] = prediction_value
+                    try:
+                        my_collection.insert_one(data_dict)
+                        st.success("Data successfully saved to MongoDB!")
+                    except pymongo.errors.OperationFailure as e:
+                        st.error(f"Error saving data to MongoDB: {e}")
 
                     # Display the saved data table
                     st.subheader('Saved Data')
@@ -130,7 +168,7 @@ def main():
             if st.button('Estimate Total Charges'):
                 df = pd.DataFrame([user_data["data"]], columns=user_data["columns"])
                 df.rename(columns={'year': 'discharge_year'}, inplace=True)
-                        
+                       
                 #map the features and make a prediction
                 def make_prediction(user_input):
                     #perfoming ordinal encoding on specific columns
@@ -146,7 +184,19 @@ def main():
                 st.subheader('Estimation: ')
                 st.text('Estimated total charges: $'+ str(prediction[0]))
 
+                # Save data to MongoDB
+                db = client[secrets.get("DATABASE_NAME")]
+                my_collection = db[secrets.get("COLLECTION_NAME")]
+                prediction_value = float(prediction[0])
+                data_dict = {column: value for column, value in zip(columns, user_data["data"])}
+                data_dict["estimation"] = prediction_value
+                try:
+                    my_collection.insert_one(data_dict)
+                    st.success("Data successfully saved to MongoDB!")
+                except pymongo.errors.OperationFailure as e:
+                    st.error(f"Error saving data to MongoDB: {e}")
 
+                
                 # Append the input and result to the saved_data list
                 saved_data.append(user_data["data"] + [prediction[0]])
 
@@ -155,6 +205,7 @@ def main():
                 if saved_data:
                     saved_data_df = pd.DataFrame(saved_data, columns=user_data["columns"] + ['Estimated Total Charges'])
                     st.table(saved_data_df)
+
 
 if __name__ == '__main__':
     try:
