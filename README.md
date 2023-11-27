@@ -13,4 +13,4 @@ docker run -p 8501:8501 my_streamlit_app
 ### After running docker file use localhost url to use streamlit app
 http://localhost:8501/
 
-
+![alt text](https://verified.sertifier.com/en/verify/35485319899531/?ref=email#:~:text=Certificate%20PDF-,Certificate,-PNG)
