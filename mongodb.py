@@ -60,4 +60,4 @@ else:
     df = pd.DataFrame(documents)
 
     # Display the DataFrame
-    print(df.tail())
+    print(df.tail(1))
