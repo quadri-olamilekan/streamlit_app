@@ -1,0 +1,61 @@
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: mldeployment
+  labels:
+    app: mldeployment
+spec:
+  selector:
+    app: mldeployment
+  ports:
+  - name: streamlit
+    port: 8501
+  type: LoadBalancer
+status:
+  loadBalancer: {}
+---
+# Gateway
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: mldeployment-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 8501
+      name: streamlit
+      protocol: TCP
+    hosts:
+    - "*"
+---
+# Virtual service
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata: name:mldeployment
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - mldeployment-gateway
+  http:
+  - route:
+    - destination:
+        host: mldeployment
+        subset: v1
+      weight: 100
+
+---
+# Destination rule
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: mldeployment
+spec:
+  host: mldeployment
+  subsets:
+  - name: v1
+    labels:
+      version: v1
