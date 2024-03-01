@@ -34,7 +34,8 @@ spec:
 # Virtual service
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
-metadata: name:mldeployment
+metadata: 
+  name: mldeployment
 spec:
   hosts:
   - "*"
