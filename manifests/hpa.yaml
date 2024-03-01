@@ -14,3 +14,8 @@ spec:
         name: cpu
         targetAverageUtilization: 50
       type: Resource
+  resources:
+    requests:
+      cpu: "200m"  # Set your desired CPU request value
+    limits:
+      cpu: "500m"  # Set your desired CPU limit value
